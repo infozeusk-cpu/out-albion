@@ -1,0 +1,3 @@
+{"username":"t","password":"$2a$10$i1mo35cE/wGNTjH6x5bY8.AJJaTtHDSakTNkk9gbRKr4Yx94JoTjm","is_admin":false,"created_at":"2026-05-07T05:36:36.420Z","_id":"4oJKTuZ99ueVl81n"}
+{"username":"admin","password":"$2a$10$sAiUJPtAX0AG0ezK.VGCQ.9woD/VBSLJYvnKLtTAMA46gbyjsGdLG","is_admin":true,"created_at":"2026-05-07T05:34:11.012Z","_id":"PBxCWQGz3z5yI7jf"}
+{"$$indexCreated":{"fieldName":"username","unique":true,"sparse":false}}
