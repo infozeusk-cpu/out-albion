@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Albion Event Bot — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--panel:#161b22;--card:#21262d;--card2:#2d333b;
+  --border:#30363d;--border2:#444c56;
+  --gold:#c9a84c;--gold2:#e5c46a;--gold3:#a87c30;
+  --text:#e6edf3;--muted:#8b949e;--muted2:#6e7681;
+  --danger:#f85149;--success:#3fb950;--info:#58a6ff;--warn:#d29922;
+  --tank:#4fc3f7;--healer:#66bb6a;--dps:#ef5350;--support:#ffb74d;
+  --sidebar-w:230px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex}
+
+/* ── SIDEBAR ─────────────────────────────────────── */
+#sidebar{
+  width:var(--sidebar-w);flex-shrink:0;background:var(--panel);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  padding:0 0 16px 0;overflow-y:auto;
+}
+.sidebar-logo{
+  padding:24px 20px 20px;border-bottom:1px solid var(--border);
+  font-family:'Cinzel',serif;font-size:15px;font-weight:700;
+  color:var(--gold);letter-spacing:1.5px;display:flex;align-items:center;gap:10px;
+}
+.sidebar-logo span{font-size:22px}
+.nav-section{padding:8px 0}
+.nav-label{
+  padding:6px 20px;font-size:10px;font-weight:600;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--muted2);
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 20px;
+  cursor:pointer;border-left:3px solid transparent;color:var(--muted);
+  font-size:13.5px;font-weight:500;transition:all .15s;
+}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{border-left-color:var(--gold);background:rgba(201,168,76,.08);color:var(--gold)}
+.nav-item .ico{font-size:16px;width:20px;text-align:center}
+.sidebar-bottom{
+  margin-top:auto;padding:16px 20px 0;border-top:1px solid var(--border);
+  font-size:12px;color:var(--muted);
+}
+.sidebar-user{font-weight:600;color:var(--text);font-size:13px;margin-bottom:2px}
+.btn-logout{
+  font-size:12px;color:var(--danger);cursor:pointer;background:none;
+  border:none;font-family:inherit;padding:0;margin-top:6px;
+}
+.btn-logout:hover{text-decoration:underline}
+
+/* ── MAIN ────────────────────────────────────────── */
+#main{flex:1;overflow-y:auto;padding:28px 32px;background:var(--bg)}
+.page{display:none}
+.page.active{display:block}
+.page-title{
+  font-family:'Cinzel',serif;font-size:22px;font-weight:700;
+  color:var(--gold);margin-bottom:24px;display:flex;align-items:center;gap:10px;
+}
+
+/* ── CARDS / STATS ───────────────────────────────── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:20px;display:flex;flex-direction:column;gap:6px;
+}
+.stat-card .val{font-family:'Cinzel',serif;font-size:28px;font-weight:700;color:var(--gold)}
+.stat-card .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+
+/* ── TABLES ──────────────────────────────────────── */
+.table-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{
+  background:var(--card);padding:10px 16px;text-align:left;
+  font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;
+  color:var(--muted);border-bottom:1px solid var(--border);
+}
+td{padding:10px 16px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+.badge{
+  display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;
+  font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;
+}
+.badge-active{background:rgba(63,185,80,.15);color:var(--success)}
+.badge-closed{background:rgba(139,148,158,.1);color:var(--muted)}
+.badge-tank{background:rgba(79,195,247,.15);color:var(--tank)}
+.badge-healer{background:rgba(102,187,106,.15);color:var(--healer)}
+.badge-dps{background:rgba(239,83,80,.15);color:var(--dps)}
+.badge-support{background:rgba(255,183,77,.15);color:var(--support)}
+.badge-admin{background:rgba(201,168,76,.15);color:var(--gold)}
+
+/* ── BUTTONS ─────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
+  border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;
+  cursor:pointer;border:none;transition:all .15s;
+}
+.btn-primary{background:var(--gold);color:#0d1117}
+.btn-primary:hover{background:var(--gold2);transform:translateY(-1px)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text);background:var(--card)}
+.btn-danger{background:rgba(248,81,73,.15);border:1px solid rgba(248,81,73,.3);color:var(--danger)}
+.btn-danger:hover{background:rgba(248,81,73,.25)}
+.btn-success{background:rgba(63,185,80,.15);border:1px solid rgba(63,185,80,.3);color:var(--success)}
+.btn-success:hover{background:rgba(63,185,80,.25)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ── FORM ────────────────────────────────────────── */
+.form-section{
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:24px;margin-bottom:20px;
+}
+.form-section-title{
+  font-family:'Cinzel',serif;font-size:14px;color:var(--gold);
+  margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-group{margin-bottom:16px}
+.form-group label{
+  display:block;font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--muted);margin-bottom:6px;
+}
+.form-group input,.form-group textarea,.form-group select{
+  width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;
+  outline:none;transition:border-color .2s,box-shadow .2s;resize:vertical;
+}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{
+  border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.12);
+}
+.form-group select option{background:var(--card)}
+
+/* ── ROLES SECTION ───────────────────────────────── */
+.role-card{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  margin-bottom:14px;overflow:hidden;
+}
+.role-card-header{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;
+  background:var(--card2);border-bottom:1px solid var(--border);cursor:pointer;
+}
+.role-card-header:hover{background:#333c46}
+.role-card-body{padding:16px;display:none}
+.role-card-body.open{display:block}
+.role-type-label{font-weight:600;font-size:14px}
+.role-type-tank{color:var(--tank)}
+.role-type-healer{color:var(--healer)}
+.role-type-dps{color:var(--dps)}
+.role-type-support{color:var(--support)}
+
+/* ── WEAPONS LIST ────────────────────────────────── */
+.weapons-list{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.weapon-item{
+  background:var(--bg);border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;display:flex;align-items:center;gap:12px;
+}
+.weapon-icon{width:40px;height:40px;border-radius:6px;background:var(--card);border:1px solid var(--border);overflow:hidden;flex-shrink:0}
+.weapon-icon img{width:100%;height:100%;object-fit:cover}
+.weapon-info{flex:1;min-width:0}
+.weapon-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.weapon-id{font-size:11px;color:var(--muted);font-family:monospace}
+
+/* ── BUILD BUILDER ───────────────────────────────── */
+.build-grid{
+  display:grid;grid-template-columns:repeat(3,96px);grid-template-rows:repeat(4,96px);
+  gap:6px;justify-content:center;padding:16px;
+  background:var(--bg);border-radius:10px;border:1px solid var(--border);
+}
+.slot{
+  width:90px;height:90px;background:var(--card2);border:2px solid var(--border);
+  border-radius:8px;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px;transition:all .15s;
+  position:relative;overflow:hidden;font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.slot:hover{border-color:var(--gold);background:var(--card)}
+.slot.filled{border-color:rgba(201,168,76,.5)}
+.slot img{width:64px;height:64px;object-fit:contain}
+.slot .slot-lbl{font-size:9px;color:var(--muted2);position:absolute;bottom:3px;left:0;right:0;text-align:center}
+.slot .slot-icon-empty{font-size:24px;opacity:.4}
+.slot-none{pointer-events:none;opacity:0}
+
+/* ── ITEM PICKER MODAL ───────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open{display:flex}
+.modal-box{
+  background:var(--panel);border:1px solid var(--border);border-radius:16px;
+  width:680px;max-height:80vh;display:flex;flex-direction:column;
+  box-shadow:0 24px 64px rgba(0,0,0,.5),0 0 0 1px rgba(201,168,76,.1);
+  animation:modalIn .2s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.modal-header{
+  padding:18px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.modal-header h3{font-family:'Cinzel',serif;font-size:16px;color:var(--gold)}
+.modal-close{
+  background:none;border:none;color:var(--muted);font-size:20px;
+  cursor:pointer;line-height:1;padding:4px;
+}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:16px 24px;overflow-y:auto;flex:1}
+.picker-controls{display:flex;gap:10px;margin-bottom:14px}
+.picker-search{
+  flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:9px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;
+  outline:none;
+}
+.picker-search:focus{border-color:var(--gold)}
+.tier-sel,.enchant-sel{
+  background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:9px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;
+  outline:none;cursor:pointer;
+}
+.items-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px;
+}
+.item-option{
+  display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;
+  background:var(--card);border:2px solid transparent;border-radius:8px;
+  cursor:pointer;transition:all .15s;
+}
+.item-option:hover{border-color:var(--gold);background:var(--card2)}
+.item-option.selected{border-color:var(--gold);background:rgba(201,168,76,.1)}
+.item-option img{width:48px;height:48px;object-fit:contain;border-radius:4px}
+.item-option span{font-size:9.5px;color:var(--muted);text-align:center;line-height:1.3;max-width:68px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.item-option.selected span{color:var(--gold)}
+.cat-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.cat-tab{
+  padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;
+  cursor:pointer;background:var(--card);border:1px solid var(--border);color:var(--muted);
+  transition:all .15s;
+}
+.cat-tab.active{background:rgba(201,168,76,.15);border-color:var(--gold);color:var(--gold)}
+
+/* ── TOAST ───────────────────────────────────────── */
+#toast{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  display:flex;flex-direction:column;gap:8px;
+}
+.toast-item{
+  background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 18px;font-size:13px;color:var(--text);
+  box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:300px;
+  animation:toastIn .3s ease;display:flex;align-items:center;gap:8px;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast-success{border-left:3px solid var(--success)}
+.toast-error{border-left:3px solid var(--danger)}
+.toast-info{border-left:3px solid var(--info)}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-logo"><span>⚔️</span> ALBION BOT</div>
+  <div class="nav-section">
+    <div class="nav-label">Genel</div>
+    <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+      <span class="ico">📊</span> Dashboard
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Etkinlikler</div>
+    <div class="nav-item" onclick="showPage('events')" id="nav-events">
+      <span class="ico">🗓️</span> Etkinlikler
+    </div>
+    <div class="nav-item" onclick="showPage('create')" id="nav-create">
+      <span class="ico">➕</span> Yeni Etkinlik
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Yönetim</div>
+    <div class="nav-item" onclick="showPage('users')" id="nav-users">
+      <span class="ico">👥</span> Kullanıcılar
+    </div>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user" id="sidebarUsername">—</div>
+    <div style="color:var(--muted);font-size:11px">Admin</div>
+    <button class="btn-logout" onclick="logout()">Çıkış Yap</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-title">📊 Dashboard</div>
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card"><div class="val" id="statEvents">–</div><div class="lbl">Toplam Etkinlik</div></div>
+      <div class="stat-card"><div class="val" id="statActive">–</div><div class="lbl">Aktif Etkinlik</div></div>
+      <div class="stat-card"><div class="val" id="statUsers">–</div><div class="lbl">Kullanıcı</div></div>
+    </div>
+    <div class="page-title" style="font-size:16px;margin-bottom:14px">⚡ Son Etkinlikler</div>
+    <div class="table-card">
+      <table>
+        <thead><tr><th>Başlık</th><th>Başlangıç</th><th>Durum</th><th>Katılımcı</th></tr></thead>
+        <tbody id="dashEventsTable"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">Yükleniyor...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EVENTS LIST -->
+  <div class="page" id="page-events">
+    <div class="page-title" style="justify-content:space-between">
+      <span>🗓️ Etkinlikler</span>
+      <button class="btn btn-primary" onclick="showPage('create')">➕ Yeni Etkinlik</button>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead><tr><th>ID</th><th>Başlık</th><th>Başlangıç</th><th>Durum</th><th>Katılımcı</th><th>İşlem</th></tr></thead>
+        <tbody id="eventsTable"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Yükleniyor...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CREATE EVENT -->
+  <div class="page" id="page-create">
+    <div class="page-title">➕ Yeni Etkinlik</div>
+
+    <div class="form-section">
+      <div class="form-section-title">📋 Temel Bilgiler</div>
+      <div class="form-row">
+        <div class="form-group"><label>Başlık *</label><input id="evTitle" type="text" placeholder="Örn: AVA Dungeon Akşam Grubu"></div>
+        <div class="form-group"><label>Discord Kanal ID</label><input id="evChannel" type="text" placeholder="Boş bırakırsanız varsayılan kanal"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Başlangıç Tarihi/Saati *</label><input id="evStart" type="datetime-local"></div>
+        <div class="form-group"><label>Bitiş Tarihi/Saati</label><input id="evEnd" type="datetime-local"></div>
+      </div>
+      <div class="form-group"><label>Açıklama</label><textarea id="evDesc" rows="3" placeholder="Etkinlik açıklaması..."></textarea></div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title" style="justify-content:space-between">
+        <span>⚔️ Roller ve Silahlar</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm btn-ghost" onclick="addRole('tank')">🛡️ Tank</button>
+          <button class="btn btn-sm btn-ghost" onclick="addRole('healer')">💚 Healer</button>
+          <button class="btn btn-sm btn-ghost" onclick="addRole('dps')">⚔️ DPS</button>
+          <button class="btn btn-sm btn-ghost" onclick="addRole('support')">✨ Support</button>
+        </div>
+      </div>
+      <div id="rolesContainer">
+        <div style="text-align:center;color:var(--muted);padding:24px;font-size:13px">
+          Yukarıdaki butonlardan rol ekleyin
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:flex-end;padding-bottom:40px">
+      <button class="btn btn-ghost" onclick="showPage('events')">İptal</button>
+      <button class="btn btn-success" onclick="submitEvent(false)">💾 Kaydet (Discord'a gönderme)</button>
+      <button class="btn btn-primary" onclick="submitEvent(true)">🚀 Oluştur ve Discord'a Gönder</button>
+    </div>
+  </div>
+
+  <!-- USERS -->
+  <div class="page" id="page-users">
+    <div class="page-title" style="justify-content:space-between">
+      <span>👥 Kullanıcılar</span>
+      <button class="btn btn-primary" onclick="showCreateUser()">➕ Yeni Kullanıcı</button>
+    </div>
+    <div class="table-card" style="margin-bottom:20px">
+      <table>
+        <thead><tr><th>ID</th><th>Kullanıcı Adı</th><th>Rol</th><th>Oluşturulma</th><th>İşlem</th></tr></thead>
+        <tbody id="usersTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ITEM PICKER MODAL -->
+<div class="modal-overlay" id="itemPickerModal">
+  <div class="modal-box" style="width:700px">
+    <div class="modal-header">
+      <h3 id="pickerTitle">Eşya Seç</h3>
+      <button class="modal-close" onclick="closeItemPicker()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="picker-controls">
+        <input class="picker-search" type="text" placeholder="🔍 Ara..." id="pickerSearch" oninput="filterPickerItems()">
+        <select class="tier-sel" id="pickerTier" onchange="filterPickerItems()">
+          <option value="">Tüm Tier</option>
+          <option value="4">T4</option><option value="5">T5</option>
+          <option value="6">T6</option><option value="7">T7</option>
+          <option value="8" selected>T8</option>
+        </select>
+        <select class="enchant-sel" id="pickerEnchant" onchange="filterPickerItems()">
+          <option value="0">Enchant 0</option>
+          <option value="1">@1</option><option value="2">@2</option>
+          <option value="3">@3</option><option value="4">@4</option>
+        </select>
+      </div>
+      <div class="cat-tabs" id="pickerCatTabs"></div>
+      <div class="items-grid" id="pickerGrid"></div>
+    </div>
+    <div style="padding:12px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0">
+      <button class="btn btn-ghost" onclick="closeItemPicker()">İptal</button>
+      <button class="btn btn-primary" onclick="confirmItemPick()">✅ Seç</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE USER MODAL -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal-box" style="width:400px">
+    <div class="modal-header">
+      <h3>Yeni Kullanıcı</h3>
+      <button class="modal-close" onclick="closeUserModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>Kullanıcı Adı</label><input id="newUsername" type="text" placeholder="kullanici_adi"></div>
+      <div class="form-group"><label>Şifre</label><input id="newPassword" type="password" placeholder="••••••"></div>
+      <div class="form-group">
+        <label>Yetki</label>
+        <select id="newIsAdmin" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text)">
+          <option value="0">Normal Kullanıcı</option>
+          <option value="1">Admin</option>
+        </select>
+      </div>
+    </div>
+    <div style="padding:12px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0">
+      <button class="btn btn-ghost" onclick="closeUserModal()">İptal</button>
+      <button class="btn btn-primary" onclick="createUser()">Oluştur</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = '';
+let token = localStorage.getItem('token');
+let user  = JSON.parse(localStorage.getItem('user') || 'null');
+
+if (!token || !user || !user.is_admin) {
+  window.location.href = '/';
+}
+document.getElementById('sidebarUsername').textContent = user?.username || '—';
+
+// ── API HELPER ─────────────────────────────────────
+async function api(method, url, body) {
+  const res = await fetch(API + url, {
+    method, headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Hata');
+  return data;
+}
+
+// ── NAVIGATION ──────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name)?.classList.add('active');
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'events')    loadEvents();
+  if (name === 'users')     loadUsers();
+  if (name === 'create')    resetCreateForm();
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = '/';
+}
+
+// ── TOAST ──────────────────────────────────────────
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast-item toast-${type}`;
+  el.innerHTML = `<span>${type==='success'?'✅':type==='error'?'❌':'ℹ️'}</span> ${msg}`;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── DASHBOARD ─────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const [events, users] = await Promise.all([
+      api('GET','/api/events'),
+      api('GET','/api/users'),
+    ]);
+    document.getElementById('statEvents').textContent = events.length;
+    document.getElementById('statActive').textContent = events.filter(e=>e.status==='active').length;
+    document.getElementById('statUsers').textContent = users.length;
+
+    const tbody = document.getElementById('dashEventsTable');
+    tbody.innerHTML = events.slice(0,8).map(e=>`
+      <tr>
+        <td>${e.title}</td>
+        <td>${new Date(e.start_time).toLocaleString('tr-TR')}</td>
+        <td><span class="badge badge-${e.status}">${e.status==='active'?'Aktif':'Kapalı'}</span></td>
+        <td>—</td>
+      </tr>
+    `).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">Etkinlik yok</td></tr>';
+  } catch(e){ toast(e.message,'error'); }
+}
+
+// ── EVENTS LIST ────────────────────────────────────
+async function loadEvents() {
+  try {
+    const events = await api('GET','/api/events');
+    const tbody = document.getElementById('eventsTable');
+    tbody.innerHTML = events.map(e=>`
+      <tr>
+        <td style="color:var(--muted);font-family:monospace">#${e.id}</td>
+        <td><strong>${e.title}</strong></td>
+        <td>${new Date(e.start_time).toLocaleString('tr-TR')}</td>
+        <td><span class="badge badge-${e.status}">${e.status==='active'?'Aktif':'Kapalı'}</span></td>
+        <td>—</td>
+        <td style="display:flex;gap:6px">
+          ${e.status==='active'
+            ? `<button class="btn btn-sm btn-danger" onclick="closeEvent(${e.id})">Kapat</button>`
+            : `<button class="btn btn-sm btn-ghost" onclick="openEvent(${e.id})">Aç</button>`}
+          <button class="btn btn-sm btn-danger" onclick="deleteEvent(${e.id})">Sil</button>
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Etkinlik yok</td></tr>';
+  } catch(e){ toast(e.message,'error'); }
+}
+
+async function closeEvent(id) {
+  try { await api('PATCH',`/api/events/${id}/status`,{status:'closed'}); toast('Etkinlik kapatıldı','success'); loadEvents(); }
+  catch(e){ toast(e.message,'error'); }
+}
+async function openEvent(id) {
+  try { await api('PATCH',`/api/events/${id}/status`,{status:'active'}); toast('Etkinlik açıldı','success'); loadEvents(); }
+  catch(e){ toast(e.message,'error'); }
+}
+async function deleteEvent(id) {
+  if(!confirm('Etkinliği silmek istediğinize emin misiniz?')) return;
+  try { await api('DELETE',`/api/events/${id}`); toast('Etkinlik silindi','success'); loadEvents(); }
+  catch(e){ toast(e.message,'error'); }
+}
+
+// ── CREATE EVENT ───────────────────────────────────
+const ROLE_CONF = {
+  tank:    { emoji:'🛡️', label:'Tank',    color:'var(--tank)' },
+  healer:  { emoji:'💚', label:'Healer',  color:'var(--healer)' },
+  dps:     { emoji:'⚔️', label:'DPS',     color:'var(--dps)' },
+  support: { emoji:'✨', label:'Support', color:'var(--support)' },
+};
+
+let roles = []; // { type, label, max_slots, weapons:[] }
+
+function resetCreateForm() {
+  document.getElementById('evTitle').value = '';
+  document.getElementById('evDesc').value = '';
+  document.getElementById('evStart').value = '';
+  document.getElementById('evEnd').value = '';
+  document.getElementById('evChannel').value = '';
+  roles = [];
+  renderRoles();
+}
+
+function addRole(type) {
+  const conf = ROLE_CONF[type];
+  roles.push({ type, label: conf.label, max_slots: 10, weapons: [] });
+  renderRoles();
+}
+
+function removeRole(idx) {
+  roles.splice(idx, 1);
+  renderRoles();
+}
+
+function renderRoles() {
+  const container = document.getElementById('rolesContainer');
+  if (!roles.length) {
+    container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:24px;font-size:13px">Yukarıdaki butonlardan rol ekleyin</div>';
+    return;
+  }
+  container.innerHTML = roles.map((role, idx) => `
+    <div class="role-card">
+      <div class="role-card-header" onclick="toggleRole(${idx})">
+        <span style="font-size:20px">${ROLE_CONF[role.type].emoji}</span>
+        <span class="role-type-label role-type-${role.type}">${role.label}</span>
+        <span style="color:var(--muted);font-size:12px;margin-left:auto">${role.weapons.length} silah</span>
+        <input type="number" value="${role.max_slots}" min="1" max="50" style="width:60px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:12px;margin-left:10px" onclick="event.stopPropagation()" onchange="roles[${idx}].max_slots=+this.value" title="Max Slot">
+        <button class="btn btn-sm btn-danger" style="margin-left:8px" onclick="event.stopPropagation();removeRole(${idx})">✕</button>
+        <span style="margin-left:8px;color:var(--muted);font-size:16px" id="roleArrow${idx}">▼</span>
+      </div>
+      <div class="role-card-body" id="roleBody${idx}">
+        <div class="weapons-list" id="weaponsList${idx}">
+          ${renderWeapons(idx)}
+        </div>
+        <button class="btn btn-sm btn-ghost" onclick="addWeapon(${idx})">➕ Silah Ekle</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleRole(idx) {
+  const body = document.getElementById(`roleBody${idx}`);
+  const arrow = document.getElementById(`roleArrow${idx}`);
+  const open = body.classList.toggle('open');
+  arrow.textContent = open ? '▲' : '▼';
+}
+
+function renderWeapons(roleIdx) {
+  const weapons = roles[roleIdx].weapons;
+  if (!weapons.length) return '<div style="color:var(--muted);font-size:12px;padding:8px 0">Henüz silah eklenmedi</div>';
+  return weapons.map((w, wi) => `
+    <div class="weapon-item">
+      <div class="weapon-icon">
+        ${w.build_data?.mainHand
+          ? `<img src="https://render.albiononline.com/v1/item/${w.build_data.mainHand}.png" onerror="this.style.display='none'">`
+          : '<span style="font-size:20px;display:flex;align-items:center;justify-content:center;height:100%">⚔️</span>'}
+      </div>
+      <div class="weapon-info">
+        <div class="weapon-name">${w.weapon_name || 'Silah Adı Yok'}</div>
+        <div class="weapon-id">${w.weapon_item_id || '—'}</div>
+      </div>
+      <button class="btn btn-sm btn-ghost" onclick="editWeapon(${roleIdx},${wi})">✏️ Düzenle</button>
+      <button class="btn btn-sm btn-danger" onclick="removeWeapon(${roleIdx},${wi})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addWeapon(roleIdx) {
+  roles[roleIdx].weapons.push({ weapon_name: 'Yeni Silah', weapon_item_id: '', build_data: {} });
+  editWeapon(roleIdx, roles[roleIdx].weapons.length - 1);
+}
+
+function removeWeapon(roleIdx, weaponIdx) {
+  roles[roleIdx].weapons.splice(weaponIdx, 1);
+  renderRoles();
+}
+
+// ── BUILD BUILDER ──────────────────────────────────
+let currentEditRole = -1;
+let currentEditWeapon = -1;
+let currentEditSlot = '';
+let currentPickedItemId = '';
+
+const SLOTS = [
+  { key:'mainHand', label:'Ana El',    icon:'🗡️', col:1, row:2 },
+  { key:'offHand',  label:'İkinci El', icon:'🛡️', col:1, row:3 },
+  { key:'head',     label:'Baş',       icon:'⛑️', col:2, row:1 },
+  { key:'chest',    label:'Göğüs',     icon:'🥋', col:2, row:2 },
+  { key:'boots',    label:'Botlar',    icon:'👢', col:2, row:3 },
+  { key:'cape',     label:'Pelerin',   icon:'🧣', col:3, row:2 },
+  { key:'food',     label:'Yemek',     icon:'🍖', col:2, row:4 },
+  { key:'potion',   label:'İksir',     icon:'🧪', col:3, row:4 },
+];
+
+// Item data (loaded from API)
+let itemData = null;
+
+async function loadItemData() {
+  if (itemData) return;
+  try {
+    itemData = await api('GET','/api/albion/items');
+  } catch { itemData = {}; }
+}
+
+// Weapon editor modal (inline below role)
+function editWeapon(roleIdx, weaponIdx) {
+  currentEditRole = roleIdx;
+  currentEditWeapon = weaponIdx;
+  showWeaponEditor();
+}
+
+function showWeaponEditor() {
+  const weapon = roles[currentEditRole].weapons[currentEditWeapon];
+  // Create inline editor after the role card
+  const existingEditor = document.getElementById('weaponEditor');
+  if (existingEditor) existingEditor.remove();
+
+  const ed = document.createElement('div');
+  ed.id = 'weaponEditor';
+  ed.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  ed.innerHTML = `
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;width:820px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.5)">
+      <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <h3 style="font-family:'Cinzel',serif;font-size:16px;color:var(--gold)">⚔️ Build Düzenleyici</h3>
+        <button style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1" onclick="closeWeaponEditor()">✕</button>
+      </div>
+      <div style="padding:20px 24px;overflow-y:auto;flex:1">
+        <div style="display:flex;gap:20px;flex-wrap:wrap">
+          <!-- Left: build grid -->
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px">Ekipman Slotları</div>
+            <div id="buildGrid" style="display:grid;grid-template-columns:repeat(3,96px);grid-template-rows:repeat(4,96px);gap:6px">
+              ${buildGridHTML(weapon.build_data)}
+            </div>
+            <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Slot'a tıkla = eşya değiştir</div>
+          </div>
+          <!-- Right: weapon info -->
+          <div style="flex:1;min-width:200px">
+            <div class="form-group"><label>Silah Adı (Discord'da görünür)</label>
+              <input type="text" id="wepName" value="${weapon.weapon_name||''}" placeholder="Örn: T8 Claws @3" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none">
+            </div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px;margin-top:4px">Seçilen Ekipman</div>
+            <div id="buildSummary" style="font-size:12px;color:var(--muted);line-height:1.8">
+              ${buildSummaryHTML(weapon.build_data)}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:12px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0">
+        <button class="btn btn-ghost" onclick="closeWeaponEditor()">İptal</button>
+        <button class="btn btn-primary" onclick="saveWeaponEditor()">💾 Kaydet</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(ed);
+}
+
+function buildGridHTML(buildData) {
+  bd = buildData || {};
+  // 3 cols x 4 rows grid
+  const grid = Array(12).fill(null);
+  SLOTS.forEach(s => { grid[(s.row-1)*3 + (s.col-1)] = s; });
+  return grid.map((s,i) => {
+    if (!s) return `<div style="background:transparent;pointer-events:none"></div>`;
+    const itemId = bd[s.key];
+    return `
+      <div class="slot ${itemId?'filled':''}" onclick="openSlotPicker('${s.key}')" title="${s.label}">
+        ${itemId
+          ? `<img src="https://render.albiononline.com/v1/item/${itemId}.png" style="width:56px;height:56px;object-fit:contain" onerror="this.outerHTML='<span style=\\'font-size:28px\\'>${s.icon}</span>'">`
+          : `<span class="slot-icon-empty">${s.icon}</span>`}
+        <span class="slot-lbl">${s.label}</span>
+      </div>`;
+  }).join('');
+}
+
+function buildSummaryHTML(buildData) {
+  if (!buildData) return '<em>Build boş</em>';
+  const filled = SLOTS.filter(s => buildData[s.key]);
+  if (!filled.length) return '<em>Hiç eşya seçilmedi</em>';
+  return filled.map(s => `<div><span style="color:var(--text)">${s.label}:</span> <code style="color:var(--gold);font-size:10px">${buildData[s.key]}</code></div>`).join('');
+}
+
+function closeWeaponEditor() {
+  document.getElementById('weaponEditor')?.remove();
+}
+
+function saveWeaponEditor() {
+  const weapon = roles[currentEditRole].weapons[currentEditWeapon];
+  weapon.weapon_name = document.getElementById('wepName').value || 'Silah';
+  weapon.weapon_item_id = weapon.build_data?.mainHand || '';
+  closeWeaponEditor();
+  renderRoles();
+}
+
+// ── SLOT PICKER ────────────────────────────────────
+const SLOT_ITEM_TYPES = {
+  mainHand: 'weapon',
+  offHand:  'offhand',
+  head:     'head',
+  chest:    'chest',
+  boots:    'boots',
+  cape:     'cape',
+  food:     'food',
+  potion:   'potion',
+};
+
+const CATEGORIES = {
+  weapon:  ['Kılıç','Balta','Topuz','Çekiç','Mızrak','Hançer','Yay','Tatar Yayı','Asa','Ateş Asası','Buz Asası','Gizem Asası','Lanet Asası','Kutsal Asa','Doğa Asası','Biçim Değiştirici'],
+  offhand: ['Kalkan','Kitap','Boru','Meşale','Totem','Küre','Kafatası'],
+  head:    ['Kumaş','Deri','Plaka'],
+  chest:   ['Kumaş','Deri','Plaka'],
+  boots:   ['Kumaş','Deri','Plaka'],
+  cape:    ['Pelerin'],
+  food:    ['Yemek'],
+  potion:  ['İksir'],
+};
+
+let activePickerSlot = '';
+let activePickerCat  = '';
+let selectedPickedId = '';
+
+async function openSlotPicker(slotKey) {
+  await loadItemData();
+  activePickerSlot = slotKey;
+  const slotInfo = SLOTS.find(s => s.key === slotKey);
+  const itemType = SLOT_ITEM_TYPES[slotKey];
+
+  document.getElementById('pickerTitle').textContent = `${slotInfo.icon} ${slotInfo.label} Seç`;
+  const cats = CATEGORIES[itemType] || [];
+  activePickerCat = cats[0] || '';
+
+  // Build cat tabs
+  document.getElementById('pickerCatTabs').innerHTML = cats.map(c =>
+    `<div class="cat-tab ${c===activePickerCat?'active':''}" onclick="setPickerCat('${c}')">${c}</div>`
+  ).join('');
+
+  document.getElementById('pickerSearch').value = '';
+  document.getElementById('pickerTier').value = '8';
+  document.getElementById('pickerEnchant').value = '0';
+
+  // Get current value
+  const weapon = roles[currentEditRole]?.weapons[currentEditWeapon];
+  selectedPickedId = weapon?.build_data?.[slotKey] || '';
+
+  renderPickerGrid(itemType, activePickerCat);
+  document.getElementById('itemPickerModal').classList.add('open');
+}
+
+function setPickerCat(cat) {
+  activePickerCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(t => {
+    t.classList.toggle('active', t.textContent === cat);
+  });
+  filterPickerItems();
+}
+
+function getItemsForSlot(itemType, cat) {
+  if (!itemData) return [];
+  const tier = parseInt(document.getElementById('pickerTier').value) || 8;
+  const enchant = parseInt(document.getElementById('pickerEnchant').value) || 0;
+  const enchStr = enchant > 0 ? `@${enchant}` : '';
+
+  let items = [];
+  if (itemType === 'weapon') {
+    items = (itemData.WEAPON_TYPES || []).filter(w => w.category === cat).map(w => ({
+      id: `T${tier}_${w.id}${enchStr}`,
+      name: w.name + (enchant ? ` @${enchant}` : '') + ` T${tier}`,
+      baseId: w.id,
+    }));
+  } else if (itemType === 'offhand') {
+    items = (itemData.OFFHAND_TYPES || []).filter(w => w.category === cat).map(w => ({
+      id: `T${tier}_${w.id}${enchStr}`,
+      name: w.name + (enchant ? ` @${enchant}` : '') + ` T${tier}`,
+      baseId: w.id,
+    }));
+  } else if (['head','chest','boots'].includes(itemType)) {
+    const key = itemType === 'boots' ? 'boots' : itemType;
+    const armorList = itemData.ARMOR_TYPES?.[key] || [];
+    items = armorList.filter(a => a.category === cat).map(a => ({
+      id: `T${tier}_${a.id}${enchStr}`,
+      name: a.name + (enchant ? ` @${enchant}` : '') + ` T${tier}`,
+      baseId: a.id,
+    }));
+  } else if (itemType === 'cape') {
+    items = (itemData.CAPE_TYPES || []).map(c => ({ id: c.id, name: c.name, baseId: c.id }));
+  } else if (itemType === 'food') {
+    items = (itemData.FOOD_TYPES || []).map(f => ({ id: f.id, name: f.name, baseId: f.id }));
+  } else if (itemType === 'potion') {
+    items = (itemData.POTION_TYPES || []).map(p => ({ id: p.id, name: p.name, baseId: p.id }));
+  }
+  return items;
+}
+
+function renderPickerGrid(itemType, cat) {
+  const search = document.getElementById('pickerSearch').value.toLowerCase();
+  let items = getItemsForSlot(itemType, cat);
+  if (search) items = items.filter(i => i.name.toLowerCase().includes(search));
+
+  document.getElementById('pickerGrid').innerHTML = items.map(item => `
+    <div class="item-option ${item.id===selectedPickedId?'selected':''}" onclick="selectPickerItem('${item.id}',this)" data-id="${item.id}">
+      <img src="https://render.albiononline.com/v1/item/${encodeURIComponent(item.id)}.png"
+           onerror="this.style.opacity='.2'" loading="lazy"
+           style="width:48px;height:48px;object-fit:contain;border-radius:4px">
+      <span>${item.name}</span>
+    </div>
+  `).join('') || `<div style="color:var(--muted);font-size:13px;padding:20px;grid-column:1/-1;text-align:center">Bu kategori için eşya bulunamadı</div>`;
+}
+
+function filterPickerItems() {
+  const itemType = SLOT_ITEM_TYPES[activePickerSlot];
+  renderPickerGrid(itemType, activePickerCat);
+}
+
+function selectPickerItem(id, el) {
+  document.querySelectorAll('.item-option').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPickedId = id;
+}
+
+function closeItemPicker() {
+  document.getElementById('itemPickerModal').classList.remove('open');
+}
+
+function confirmItemPick() {
+  if (!selectedPickedId) { closeItemPicker(); return; }
+  const weapon = roles[currentEditRole].weapons[currentEditWeapon];
+  if (!weapon.build_data) weapon.build_data = {};
+  weapon.build_data[activePickerSlot] = selectedPickedId;
+  closeItemPicker();
+  // Refresh the weapon editor
+  showWeaponEditor();
+}
+
+// ── SUBMIT EVENT ───────────────────────────────────
+async function submitEvent(postToDiscord) {
+  const title = document.getElementById('evTitle').value.trim();
+  const start = document.getElementById('evStart').value;
+  if (!title || !start) { toast('Başlık ve başlangıç zamanı zorunlu','error'); return; }
+  if (!roles.length) { toast('En az bir rol ekleyin','error'); return; }
+
+  const payload = {
+    title,
+    description: document.getElementById('evDesc').value,
+    start_time: new Date(start).toISOString(),
+    end_time: document.getElementById('evEnd').value ? new Date(document.getElementById('evEnd').value).toISOString() : null,
+    channel_id: document.getElementById('evChannel').value.trim() || null,
+    post_to_discord: postToDiscord,
+    roles: roles.map(r => ({
+      role_type: r.type,
+      role_label: r.label,
+      max_slots: r.max_slots,
+      weapons: r.weapons.map(w => ({
+        weapon_name: w.weapon_name,
+        weapon_item_id: w.weapon_item_id || w.build_data?.mainHand || '',
+        build_data: w.build_data || {},
+      })),
+    })),
+  };
+
+  try {
+    const result = await api('POST','/api/events', payload);
+    toast(`Etkinlik oluşturuldu! ${postToDiscord?'Discord\'a gönderildi.':''}`, 'success');
+    showPage('events');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ── USERS ──────────────────────────────────────────
+async function loadUsers() {
+  try {
+    const users = await api('GET','/api/users');
+    document.getElementById('usersTable').innerHTML = users.map(u => `
+      <tr>
+        <td style="color:var(--muted);font-family:monospace">#${u.id}</td>
+        <td><strong>${u.username}</strong></td>
+        <td><span class="badge ${u.is_admin?'badge-admin':'badge-active'}">${u.is_admin?'Admin':'Kullanıcı'}</span></td>
+        <td style="color:var(--muted)">${new Date(u.created_at).toLocaleDateString('tr-TR')}</td>
+        <td>${u.username!=='admin'?`<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">Sil</button>`:'—'}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">Kullanıcı yok</td></tr>';
+  } catch(e){ toast(e.message,'error'); }
+}
+
+function showCreateUser() {
+  document.getElementById('userModal').classList.add('open');
+}
+function closeUserModal() {
+  document.getElementById('userModal').classList.remove('open');
+  document.getElementById('newUsername').value = '';
+  document.getElementById('newPassword').value = '';
+}
+async function createUser() {
+  const username = document.getElementById('newUsername').value.trim();
+  const password = document.getElementById('newPassword').value;
+  const is_admin = parseInt(document.getElementById('newIsAdmin').value);
+  if (!username || !password) { toast('Kullanıcı adı ve şifre girin','error'); return; }
+  try {
+    await api('POST','/api/users',{username,password,is_admin});
+    toast('Kullanıcı oluşturuldu','success');
+    closeUserModal();
+    loadUsers();
+  } catch(e){ toast(e.message,'error'); }
+}
+async function deleteUser(id) {
+  if(!confirm('Kullanıcı silinsin mi?')) return;
+  try { await api('DELETE',`/api/users/${id}`); toast('Kullanıcı silindi','success'); loadUsers(); }
+  catch(e){ toast(e.message,'error'); }
+}
+
+// Init
+loadDashboard();
+</script>
+</body>
+</html>
