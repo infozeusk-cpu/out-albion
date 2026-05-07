@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>out-albion</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0d1117;
+    --panel:   #161b22;
+    --card:    #21262d;
+    --border:  #30363d;
+    --gold:    #c9a84c;
+    --gold2:   #e5c46a;
+    --text:    #e6edf3;
+    --muted:   #8b949e;
+    --danger:  #f85149;
+    --success: #3fb950;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(201,168,76,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(79,195,247,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(239,83,80,0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* Particle dots */
+  .particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 50%;
+    opacity: 0;
+    animation: float var(--dur) var(--delay) infinite ease-in-out;
+  }
+  @keyframes float {
+    0%   { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(-10vh) translateX(var(--dx)); opacity: 0; }
+  }
+
+  .login-card {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 0 60px rgba(201,168,76,0.1), 0 24px 64px rgba(0,0,0,0.5);
+    animation: slideUp 0.5s ease forwards;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Gold top border accent */
+  .login-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 20%; right: 20%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    border-radius: 2px;
+  }
+
+  .logo {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .logo-icon {
+    font-size: 48px;
+    line-height: 1;
+    margin-bottom: 12px;
+    display: block;
+    filter: drop-shadow(0 0 20px rgba(201,168,76,0.5));
+  }
+  .logo h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(201,168,76,0.4);
+  }
+  .logo p {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+  }
+
+  .btn-login {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold), #a87c30);
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    color: #0d1117;
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-login::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.2s;
+  }
+  .btn-login:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(201,168,76,0.3); }
+  .btn-login:hover::after { background: rgba(255,255,255,0.08); }
+  .btn-login:active { transform: translateY(0); }
+  .btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .error-msg {
+    background: rgba(248,81,73,0.1);
+    border: 1px solid rgba(248,81,73,0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--danger);
+    margin-top: 16px;
+    display: none;
+  }
+  .error-msg.show { display: block; animation: shake 0.4s ease; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25%      { transform: translateX(-6px); }
+    75%      { transform: translateX(6px); }
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 24px;
+  }
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="login-card">
+  <div class="logo">
+    <span class="logo-icon">⚔️</span>
+    <h1>ALBION EVENT BOT</h1>
+    <p>Guild Etkinlik Yönetimi</p>
+  </div>
+
+  <div class="form-group">
+    <label for="username">Kullanıcı Adı</label>
+    <input type="text" id="username" placeholder="Kullanıcı adınızı girin" autocomplete="username">
+  </div>
+
+  <div class="form-group">
+    <label for="password">Şifre</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+  </div>
+
+  <button class="btn-login" id="loginBtn" onclick="login()">Giriş Yap</button>
+  <div class="error-msg" id="errorMsg"></div>
+
+  <p class="footer-note">out-Albion</p>
+</div>
+
+<script>
+  // Generate floating particles
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      --dur: ${4 + Math.random() * 6}s;
+      --delay: ${-Math.random() * 10}s;
+      --dx: ${(Math.random() - 0.5) * 200}px;
+      width: ${1 + Math.random() * 3}px;
+      height: ${1 + Math.random() * 3}px;
+      opacity: ${0.3 + Math.random() * 0.5};
+    `;
+    container.appendChild(p);
+  }
+
+  // Enter key support
+  document.getElementById('password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') login();
+  });
+
+  async function login() {
+    const btn = document.getElementById('loginBtn');
+    const errEl = document.getElementById('errorMsg');
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!username || !password) {
+      showError('Kullanıcı adı ve şifre girin.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Giriş yapılıyor...';
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Hata');
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      // Redirect
+      window.location.href = data.user.is_admin ? '/admin' : '/panel';
+    } catch (err) {
+      showError(err.message);
+      btn.disabled = false;
+      btn.textContent = 'Giriş Yap';
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
+  }
+
+  // Already logged in?
+  const token = localStorage.getItem('token');
+  const user  = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+  if (token && user) {
+    window.location.href = user.is_admin ? '/admin' : '/panel';
+  }
+</script>
+</body>
+</html>
