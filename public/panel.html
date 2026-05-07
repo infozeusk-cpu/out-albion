@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Albion Event Bot — Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--panel:#161b22;--card:#21262d;--card2:#2d333b;
+  --border:#30363d;--border2:#444c56;
+  --gold:#c9a84c;--gold2:#e5c46a;
+  --text:#e6edf3;--muted:#8b949e;--muted2:#6e7681;
+  --danger:#f85149;--success:#3fb950;--info:#58a6ff;
+  --tank:#4fc3f7;--healer:#66bb6a;--dps:#ef5350;--support:#ffb74d;
+}
+html,body{min-height:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
+
+/* ── TOP NAV ─────────────────────────── */
+nav{
+  background:var(--panel);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;height:56px;position:sticky;top:0;z-index:50;
+}
+.nav-logo{font-family:'Cinzel',serif;font-size:16px;color:var(--gold);display:flex;align-items:center;gap:8px;letter-spacing:1px}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-user{font-size:13px;color:var(--muted)}
+.nav-user strong{color:var(--text)}
+.btn-logout{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger)}
+
+/* ── HERO ─────────────────────────────── */
+.hero{
+  background:linear-gradient(135deg,#0d1117 0%,#1a1f2e 100%);
+  border-bottom:1px solid var(--border);padding:40px 32px 36px;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 70% 50%,rgba(201,168,76,.07) 0%,transparent 60%);
+}
+.hero-title{font-family:'Cinzel',serif;font-size:26px;font-weight:700;color:var(--gold);margin-bottom:6px;position:relative}
+.hero-sub{font-size:13px;color:var(--muted);position:relative}
+
+/* ── MAIN ─────────────────────────────── */
+main{max-width:1100px;margin:0 auto;padding:32px}
+.section-title{
+  font-family:'Cinzel',serif;font-size:16px;color:var(--gold);
+  margin-bottom:18px;display:flex;align-items:center;gap:8px;
+}
+
+/* ── EVENT CARDS ─────────────────────── */
+.events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
+.event-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:14px;
+  overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:pointer;
+  position:relative;
+}
+.event-card:hover{transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,.3),0 0 0 1px rgba(201,168,76,.15)}
+.event-card-accent{height:3px;background:linear-gradient(90deg,var(--gold),transparent)}
+.event-card-body{padding:20px}
+.event-title{font-family:'Cinzel',serif;font-size:15px;color:var(--text);margin-bottom:6px}
+.event-desc{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.event-time{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:14px}
+.event-time strong{color:var(--text)}
+.event-roles{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.role-pill{
+  display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600;
+}
+.role-pill-tank{background:rgba(79,195,247,.12);color:var(--tank);border:1px solid rgba(79,195,247,.2)}
+.role-pill-healer{background:rgba(102,187,106,.12);color:var(--healer);border:1px solid rgba(102,187,106,.2)}
+.role-pill-dps{background:rgba(239,83,80,.12);color:var(--dps);border:1px solid rgba(239,83,80,.2)}
+.role-pill-support{background:rgba(255,183,77,.12);color:var(--support);border:1px solid rgba(255,183,77,.2)}
+.event-card-footer{
+  padding:12px 20px;background:var(--card);border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.event-card-footer .participants{font-size:12px;color:var(--muted)}
+.badge-active{background:rgba(63,185,80,.15);color:var(--success);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600}
+.badge-closed{background:rgba(139,148,158,.1);color:var(--muted);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600}
+
+/* ── DETAIL MODAL ────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);padding:20px;
+}
+.modal-overlay.open{display:flex}
+.modal-box{
+  background:var(--panel);border:1px solid var(--border);border-radius:16px;
+  width:100%;max-width:720px;max-height:90vh;display:flex;flex-direction:column;
+  box-shadow:0 24px 64px rgba(0,0,0,.5),0 0 0 1px rgba(201,168,76,.08);
+  animation:modalIn .2s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.modal-header{
+  padding:20px 24px;border-bottom:1px solid var(--border);flex-shrink:0;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+}
+.modal-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;padding:2px;flex-shrink:0}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1}
+.modal-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0}
+
+.role-section{margin-bottom:20px}
+.role-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:var(--card);border-radius:8px;margin-bottom:10px;
+}
+.role-name{font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px}
+.role-progress{font-size:12px;color:var(--muted)}
+.participants-list{display:flex;flex-direction:column;gap:6px}
+.participant-row{
+  display:flex;align-items:center;gap:10px;padding:8px 12px;
+  background:var(--card2);border-radius:8px;font-size:13px;
+}
+.participant-row .weapon{font-size:11px;color:var(--muted);margin-left:auto}
+
+/* ── BUTTONS ─────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:10px 20px;
+  border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;
+  cursor:pointer;border:none;transition:all .15s;
+}
+.btn-primary{background:var(--gold);color:#0d1117;font-weight:600}
+.btn-primary:hover{background:var(--gold2);transform:translateY(-1px)}
+.btn-danger{background:rgba(248,81,73,.15);border:1px solid rgba(248,81,73,.3);color:var(--danger)}
+.btn-danger:hover{background:rgba(248,81,73,.25)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text);background:var(--card)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ── EMPTY STATE ─────────────────────── */
+.empty{
+  text-align:center;padding:60px 20px;color:var(--muted);
+  font-size:14px;
+}
+.empty .empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
+
+/* ── TOAST ───────────────────────────── */
+#toast{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast-item{
+  background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 18px;font-size:13px;color:var(--text);
+  box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:300px;
+  animation:toastIn .3s ease;display:flex;align-items:center;gap:8px;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast-success{border-left:3px solid var(--success)}
+.toast-error{border-left:3px solid var(--danger)}
+.toast-info{border-left:3px solid var(--info)}
+
+/* Loading spinner */
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><span>⚔️</span> ALBION EVENT BOT</div>
+  <div class="nav-right">
+    <div class="nav-user">Hoş geldin, <strong id="navUsername">—</strong></div>
+    <button class="btn-logout" onclick="logout()">Çıkış</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-title">⚔️ Guild Etkinlikleri</div>
+  <div class="hero-sub">Aktif etkinliklere katılmak için karta tıklayın</div>
+</div>
+
+<main>
+  <div class="section-title">🗓️ Aktif Etkinlikler</div>
+  <div class="events-grid" id="eventsGrid">
+    <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">
+      <div class="spinner" style="width:28px;height:28px;margin:0 auto 12px"></div>
+      Etkinlikler yükleniyor...
+    </div>
+  </div>
+</main>
+
+<!-- EVENT DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div id="detailTitle" style="font-family:'Cinzel',serif;font-size:18px;color:var(--gold);margin-bottom:4px"></div>
+        <div id="detailTime" style="font-size:12px;color:var(--muted)"></div>
+      </div>
+      <button class="modal-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="detailDesc" style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6"></div>
+      <div id="detailRoles"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeDetail()">Kapat</button>
+      <button class="btn btn-danger" id="leaveBtn" onclick="leaveEvent()" style="display:none">❌ Ayrıl</button>
+      <button class="btn btn-primary" id="joinBtn" onclick="joinEvent()">✅ Katıl</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let token = localStorage.getItem('token');
+let user  = JSON.parse(localStorage.getItem('user') || 'null');
+
+if (!token || !user) { window.location.href = '/'; }
+document.getElementById('navUsername').textContent = user?.username || '—';
+
+async function api(method, url, body) {
+  const res = await fetch(url, {
+    method,
+    headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Hata');
+  return data;
+}
+
+function logout() { localStorage.clear(); window.location.href = '/'; }
+
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast-item toast-${type}`;
+  el.innerHTML = `<span>${type==='success'?'✅':type==='error'?'❌':'ℹ️'}</span> ${msg}`;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+const ROLE_CONF = {
+  tank:    { emoji:'🛡️', label:'Tank',    cls:'tank' },
+  healer:  { emoji:'💚', label:'Healer',  cls:'healer' },
+  dps:     { emoji:'⚔️', label:'DPS',     cls:'dps' },
+  support: { emoji:'✨', label:'Support', cls:'support' },
+};
+
+// ── LOAD EVENTS ────────────────────────────────────
+async function loadEvents() {
+  try {
+    const events = await api('GET', '/api/events');
+    const active = events.filter(e => e.status === 'active');
+    const grid = document.getElementById('eventsGrid');
+
+    if (!active.length) {
+      grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+        <div class="empty-icon">📅</div>
+        Şu an aktif etkinlik yok.<br>
+        <span style="font-size:12px;color:var(--muted2);margin-top:6px;display:block">Yeni etkinlikler burada görünecek.</span>
+      </div>`;
+      return;
+    }
+
+    // Load full data for each event
+    const detailed = await Promise.all(
+      active.map(e => api('GET', `/api/events/${e.id}`))
+    );
+
+    grid.innerHTML = detailed.map(ev => renderEventCard(ev)).join('');
+  } catch(e) {
+    document.getElementById('eventsGrid').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">⚠️</div>${e.message}</div>`;
+  }
+}
+
+function renderEventCard(ev) {
+  const start = new Date(ev.start_time);
+  const now   = Date.now();
+  const diff  = start - now;
+  let timeLabel = '';
+  if (diff > 0) {
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    if (h >= 24) timeLabel = `${Math.floor(h/24)} gün sonra`;
+    else if (h > 0) timeLabel = `${h} saat ${m} dk sonra`;
+    else timeLabel = `${m} dk sonra`;
+  } else {
+    timeLabel = 'Başladı';
+  }
+
+  const roles = ev.roles || [];
+  const participants = ev.participants || [];
+
+  const rolePills = roles.map(r => {
+    const rc = ROLE_CONF[r.role_type] || { emoji:'❓', label:r.role_label, cls:'dps' };
+    const cnt = participants.filter(p => p.role_id === r.id).length;
+    return `<div class="role-pill role-pill-${rc.cls}">${rc.emoji} ${rc.label} ${cnt}/${r.max_slots}</div>`;
+  }).join('');
+
+  const isJoined = participants.some(p => p.user_id == user?.id || p.username === user?.username);
+
+  return `
+    <div class="event-card" onclick="openDetail(${ev.id})">
+      <div class="event-card-accent"></div>
+      <div class="event-card-body">
+        <div class="event-title">${ev.title}</div>
+        <div class="event-desc">${ev.description || 'Açıklama yok.'}</div>
+        <div class="event-time">
+          🕐 <strong>${start.toLocaleDateString('tr-TR', {day:'2-digit',month:'short',year:'numeric'})}</strong>
+          &nbsp;${start.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}
+          &nbsp;·&nbsp;<span style="color:var(--gold)">${timeLabel}</span>
+        </div>
+        <div class="event-roles">${rolePills}</div>
+      </div>
+      <div class="event-card-footer">
+        <div class="participants">👥 ${participants.length} katılımcı</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${isJoined?`<span style="font-size:11px;color:var(--success)">✅ Katıldınız</span>`:''}
+          <span class="badge-active">Aktif</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ── DETAIL MODAL ───────────────────────────────────
+let currentEventId = null;
+
+async function openDetail(id) {
+  currentEventId = id;
+  try {
+    const ev = await api('GET', `/api/events/${id}`);
+    renderDetail(ev);
+    document.getElementById('detailModal').classList.add('open');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function renderDetail(ev) {
+  const start = new Date(ev.start_time);
+  document.getElementById('detailTitle').textContent = ev.title;
+  document.getElementById('detailTime').textContent =
+    `📅 ${start.toLocaleDateString('tr-TR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})} · ${start.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`;
+  document.getElementById('detailDesc').textContent = ev.description || '';
+
+  const participants = ev.participants || [];
+  const isJoined = participants.some(p => p.username === user?.username);
+
+  document.getElementById('joinBtn').style.display  = isJoined ? 'none' : 'inline-flex';
+  document.getElementById('leaveBtn').style.display = isJoined ? 'inline-flex' : 'none';
+
+  // Render roles
+  const roles = ev.roles || [];
+  document.getElementById('detailRoles').innerHTML = roles.map(role => {
+    const rc = ROLE_CONF[role.role_type] || { emoji:'❓', label:role.role_label, cls:'dps' };
+    const roleParticipants = participants.filter(p => p.role_id === role.id);
+    const count = roleParticipants.length;
+    const max   = role.max_slots;
+
+    const memberRows = roleParticipants.map(p => `
+      <div class="participant-row">
+        <span>👤 ${p.username}</span>
+        <span class="weapon">⚔️ ${p.weapon_name || '?'}</span>
+      </div>
+    `).join('') || `<div style="font-size:12px;color:var(--muted2);padding:6px 0">Henüz katılımcı yok</div>`;
+
+    const progressPct = Math.min(100, (count / max) * 100);
+
+    return `
+      <div class="role-section">
+        <div class="role-header">
+          <div class="role-name role-type-${rc.cls}"
+               style="color:var(--${rc.cls==='tank'?'tank':rc.cls==='healer'?'healer':rc.cls==='dps'?'dps':'support'})">
+            ${rc.emoji} ${rc.label}
+          </div>
+          <div class="role-progress">${count} / ${max}</div>
+        </div>
+        <div style="height:3px;background:var(--card2);border-radius:99px;margin:-4px 0 10px;overflow:hidden">
+          <div style="height:100%;width:${progressPct}%;background:var(--gold);border-radius:99px;transition:width .5s"></div>
+        </div>
+        <div class="participants-list">${memberRows}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function closeDetail() {
+  document.getElementById('detailModal').classList.remove('open');
+  currentEventId = null;
+}
+
+// ── JOIN ──────────────────────────────────────────
+// The actual join flow happens on Discord — clicking join here is just info
+async function joinEvent() {
+  toast('Katılmak için Discord\'daki etkinlik mesajından ✅ Katıl butonuna basın!', 'info');
+}
+
+async function leaveEvent() {
+  toast('Ayrılmak için Discord\'daki etkinlik mesajından ❌ Ayrıl butonuna basın!', 'info');
+}
+
+// Close modal on overlay click
+document.getElementById('detailModal').addEventListener('click', function(e) {
+  if (e.target === this) closeDetail();
+});
+
+// Init
+loadEvents();
+</script>
+</body>
+</html>
