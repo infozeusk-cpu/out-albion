@@ -1,1 +1,13 @@
-
+{"role_type":"tank","role_label":"Tank","max_slots":10,"event_id":"P783sZyTbT2nGzml","_id":"6QwVZnqS1mcbQT9A"}
+{"role_type":"support","role_label":"Support","max_slots":10,"event_id":"P783sZyTbT2nGzml","_id":"Dv6G5WdrWsAx6sxB"}
+{"role_type":"tank","role_label":"Tank","max_slots":10,"event_id":"ZVTmuI3ZSrQCSFeC","_id":"FJQpT2XqJMBLvSp1"}
+{"role_type":"healer","role_label":"Healer","max_slots":10,"event_id":"334qwJ3QtiDvk4wR","_id":"LowZHmh8fMc4djz8"}
+{"role_type":"healer","role_label":"Healer","max_slots":10,"event_id":"CtY2VNWrfbedG44G","_id":"PvJX1WG1lytZcjyo"}
+{"role_type":"support","role_label":"Support","max_slots":10,"event_id":"lsWhOJflP7SSDJk0","_id":"UBwjqbkIX2sP75Jj"}
+{"role_type":"dps","role_label":"DPS","max_slots":10,"event_id":"CtY2VNWrfbedG44G","_id":"XIJ1b8sNlj2Akxwt"}
+{"role_type":"dps","role_label":"DPS","max_slots":10,"event_id":"lsWhOJflP7SSDJk0","_id":"Y3P2wHvXoOGkJ9nr"}
+{"role_type":"tank","role_label":"Tank","max_slots":10,"event_id":"334qwJ3QtiDvk4wR","_id":"YTZIT30RSGy2d7dv"}
+{"role_type":"tank","role_label":"Tank","max_slots":10,"event_id":"lsWhOJflP7SSDJk0","_id":"acjWGIgElQNN9Fdt"}
+{"role_type":"healer","role_label":"Healer","max_slots":10,"event_id":"lsWhOJflP7SSDJk0","_id":"eUFtHK8MVf3Z7Gej"}
+{"role_type":"support","role_label":"Support","max_slots":10,"event_id":"CtY2VNWrfbedG44G","_id":"r8h5330RALk2Qbl1"}
+{"role_type":"tank","role_label":"Tank","max_slots":10,"event_id":"CtY2VNWrfbedG44G","_id":"uwCBmlyW8OQst7IN"}
