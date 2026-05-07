@@ -1,0 +1,8 @@
+{
+  "token": "MTUwMTgyOTQwOTQ3NTM5NTYwMg.GNuhEP.iK7Q70dSCLV3scw9ufX8EWO0Lpm8RaktZVZnKQ",
+  "clientId": "1501829409475395602",
+  "guildId": "1237022052997660693",
+  "eventChannelId": "1347889943652990987",
+  "port": 3000,
+  "jwtSecret": "bunu_rastgele_bir_stringe_degistir_guvenlik_icin"
+}

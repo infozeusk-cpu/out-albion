@@ -1,0 +1,20 @@
+{
+  "name": "albion-event-bot",
+  "version": "1.0.0",
+  "description": "Albion Online Guild Event Discord Bot with Web Panel",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "express": "^4.18.2",
+    "nedb-promises": "^6.2.1",
+    "jimp": "^0.22.12",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^2.7.0",
+    "uuid": "^9.0.0",
+    "cors": "^2.8.5"
+  }
+}
